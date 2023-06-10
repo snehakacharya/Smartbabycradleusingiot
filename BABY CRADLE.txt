@@ -1,0 +1,237 @@
+
+
+#include <LiquidCrystal.h>
+#include<DHT.h>
+
+const int rs = 8, en = 9, d4 = 10, d5 = 11, d6 = 12, d7 = 13;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
+int light=4;
+int sound=3;
+
+#define Type DHT11
+int DHT11PIN = 5;
+DHT HT(DHT11PIN, Type);
+//float Humidity;
+float tempC;
+
+
+int data=A1;//heartbeat sensor
+int count=0;
+
+unsigned long temp=0;
+    
+//      byte customChar1[8] = {0b00000,0b00000,0b00011,0b00111,0b01111,0b01111,0b01111,0b01111};
+//      byte customChar2[8] = {0b00000,0b11000,0b11100,0b11110,0b11111,0b11111,0b11111,0b11111};
+//      byte customChar3[8] = {0b00000,0b00011,0b00111,0b01111,0b11111,0b11111,0b11111,0b11111};
+//      byte customChar4[8] = {0b00000,0b10000,0b11000,0b11100,0b11110,0b11110,0b11110,0b11110};
+//      byte customChar5[8] = {0b00111,0b00011,0b00001,0b00000,0b00000,0b00000,0b00000,0b00000};
+//      byte customChar6[8] = {0b11111,0b11111,0b11111,0b11111,0b01111,0b00111,0b00011,0b00001};
+//      byte customChar7[8] = {0b11111,0b11111,0b11111,0b11111,0b11110,0b11100,0b11000,0b10000};
+//      byte customChar8[8] = {0b11100,0b11000,0b10000,0b00000,0b00000,0b00000,0b00000,0b00000};
+
+#define IN1 6      // left motor
+#define IN2 7    // left motor
+
+
+//int Voice=6;
+
+int i=0;
+
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(DHT11PIN, INPUT);
+  lcd.begin(16,2);
+  HT.begin();
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(sound,INPUT);
+
+  pinMode(light, OUTPUT);
+//  pinMode(VIB, INPUT);
+
+//  digitalWrite(Voice,LOW);
+  digitalWrite(light,LOW);
+  digitalWrite(IN1,LOW);
+  digitalWrite(IN2,LOW);
+
+//      lcd.createChar(1, customChar1);
+//      lcd.createChar(2, customChar2);
+//      lcd.createChar(3, customChar3);
+//      lcd.createChar(4, customChar4);
+//      lcd.createChar(5, customChar5);
+//      lcd.createChar(6, customChar6);
+//      lcd.createChar(7, customChar7);
+//      lcd.createChar(8, customChar8);
+      
+     
+      Serial.begin(9600);
+//      lcd.begin(16, 2);
+      lcd.print("BABY CRADLE..");
+      delay(1000);
+ 
+}
+
+void loop()
+{
+   SOUND_MONITOR();
+   delay(1000);
+   TEMP_MONITOR();
+   delay(1000);
+   WET_MONITOR();
+   delay(1000);
+   HEART_BEAT_MONITOR();
+    delay(1000);
+}
+
+void TEMP_MONITOR()
+{
+//  Humidity = HT.readHumidity();
+  tempC = HT.readTemperature();
+//  if(Temp_val<10)
+//  Temp_val=28.0;
+  lcd.clear();
+  lcd.print("TEMP:");
+  lcd.print(tempC);
+  Serial.print("TEMP:");
+  Serial.println(tempC);
+  delay(1000);
+  if(tempC>35)
+  {
+  lcd.clear();
+  lcd.print("MORE TEMP");
+  lcd.print("DETECTED..");
+  Serial.print("MORE TEMP");
+  Serial.println();
+  delay(1000);
+    
+ }
+
+}
+void WET_MONITOR()
+{
+  int WET_val=analogRead(A2);
+//  WET_val=1023-WET_val;
+  lcd.clear();
+  lcd.print("WET:");
+  lcd.print(WET_val);
+  Serial.print("WET:");
+  Serial.println(WET_val);
+  delay(1000);
+  if(WET_val<700)
+  {
+    lcd.clear();
+    lcd.print("BABY IS WET..");
+    Serial.println("$Baby is Wet#");
+//    CRADLE_START();
+    
+  }
+
+
+}
+void SOUND_MONITOR()
+{
+  int Sound_val=digitalRead(sound);
+  lcd.clear();
+  lcd.print("SOUND:");
+  lcd.print(Sound_val);
+  Serial.print("SOUND:");
+  Serial.println(Sound_val);
+  delay(1000);
+  if(Sound_val==LOW)
+  {
+    lcd.clear();
+    lcd.print("BABY CRYING..");
+    Serial.println("$Baby Crying...#");
+    CRADLE_START();
+    
+  }
+
+
+}
+
+void CRADLE_START()
+{ 
+   digitalWrite(light,HIGH);
+  for(i=0;i<2;i++)
+  {
+    digitalWrite(IN1,HIGH);
+    digitalWrite(IN2,LOW);
+    delay(300);
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,LOW);
+    delay(300);
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,HIGH);
+    delay(300);
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,LOW);
+    delay(300);
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,HIGH);
+    delay(300);
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,LOW);
+    delay(300);
+     digitalWrite(IN1,HIGH);
+    digitalWrite(IN2,LOW);
+    delay(300);
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,LOW);
+    delay(300);
+  }
+  digitalWrite(light,LOW);
+  STOP();
+}
+void STOP()
+{
+   
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,LOW);
+  
+
+}
+void HEART_BEAT_MONITOR()
+{
+
+   count=0;
+     lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Place The Finger");
+    lcd.setCursor(0,1);
+    lcd.print("to check HB");
+   Serial.println("Place The Finger to check HB");
+   delay(2000);
+ // while(digitalRead(start)>0);
+  
+    temp=millis();
+   
+   while(millis()<(temp+2000))
+   {
+   
+      if(analogRead(data)<100)
+        {
+         count=count+1;
+                  
+         while(analogRead(data)<100);
+
+       
+        }
+   }
+   
+         
+         count=count*6;
+         
+         temp=0;
+         delay(1000);
+         lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("HEART BEATS=");
+        lcd.setCursor(0,1);
+        lcd.print(count);
+         Serial.print(count);
+         Serial.println("");
+         delay(1000);
+      
+}
